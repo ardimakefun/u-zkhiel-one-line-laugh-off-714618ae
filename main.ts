@@ -49,3 +49,21 @@ if (written !== JOKE) {
     `Read-back mismatch: wrote ${JOKE.length} chars, read back ${written.length} chars`,
   );
 }
+
+// Re-validate the gate against the bytes actually on disk, not just the
+// in-memory constant: if another entry's file replaced ours between the
+// write and the read, equality alone could still pass while the submitted
+// bytes violate the gate. The file itself must be one line of 1-200
+// non-whitespace characters, or fail loudly here instead of shipping an
+// invalid entry.
+if (
+  written.length < 1 ||
+  written.length > 200 ||
+  written.trim().length === 0 ||
+  written.includes("\n") ||
+  written.includes("\r")
+) {
+  throw new Error(
+    `Read-back gate failed: entry on disk must be one line of 1-200 non-whitespace characters, got ${written.length} chars`,
+  );
+}
